@@ -24,42 +24,24 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
 
 export default {
   props: {
   },
   setup() {
-    const router = useRouter();
-    var userInfo = ref(null);
     const isMenuOpen = ref(false);
     const toggleMenu = () => {
       isMenuOpen.value = !isMenuOpen.value;
     };
-    const showDropdown = ref(false);
     
     onMounted(() => {
-      fetchUserInfo(); // Fetch user info on mount
-    });
-
-    const isLoggedIn = computed(() => {
-      try {
-        const loggedIn = userInfo.value && userInfo.value.custodyCode;
-        return loggedIn;
-      } catch (error) {
-        console.error('Error parsing userInfo:', error);
-      }
-      return false; // Return false if parsing fails
+      
     });
 
     return {
       isMenuOpen,
-      toggleMenu,
-      showDropdown,
-      logout,
-      isLoggedIn,
-      userInfo
+      toggleMenu
     };
   },
 };

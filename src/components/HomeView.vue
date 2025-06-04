@@ -20,22 +20,6 @@
                   <td class="tr-stockvn">Company Name:</td>
                   <td>{{ companyName ?? 'N/A' }}</td>
                 </tr>
-                <tr>
-                  <td class="tr-stockvn">Current Price:</td>
-                  <td>{{ formatNumber(currentPrice) }}</td>
-                </tr>
-                <tr>
-                  <td class="tr-stockvn">FI Price:</td>
-                  <td>{{ formatNumber(fiPrice) }}</td>
-                </tr>
-                <tr>
-                  <td class="tr-stockvn">DCF Price:</td>
-                  <td>{{ formatNumber(dcfPrice) }}</td>
-                </tr>
-                <tr>
-                  <td class="tr-stockvn">Avg. Predict Price:</td>
-                  <td>{{ formatNumber(averagePrice) }}</td>
-                </tr>
               </tbody>
             </table>
             <div v-if="selectedStock !== null && selectedStock.code !== ''" style="position: sticky; top: 0; background-color: #fff; z-index: 100;">
@@ -67,16 +51,9 @@
                 </tbody>
               </table>
 
-              <div v-if="potentialStocks.data && potentialStocks.data.length > 0"
-                class="d-flex justify-content-center gap-2 my-2">
-                <button @click="exportCSV" class="btn btn-primary">Export CSV file</button>
-                <button class="btn btn-secondary" @click="addToWatchList" :disabled="!isLoggedIn">Add to my watch
-                  list</button>
-              </div>
               <button v-if="!loadingPotentialStocks && !startScanning" @click="startScanningStocks"
                 class="btn btn-success">Start to
                 scan...</button>
-              <p v-if="message" class="text-center">{{ message }}</p>
             </div>
           </div>
         </div>
@@ -91,7 +68,6 @@ import NavBar from './NavBar.vue';
 import AppFooter from './AppFooter.vue';
 import { ref, onMounted, watch, computed } from 'vue';
 import vSelect from 'vue3-select';
-import axios from 'axios';
 
 export default {
   name: 'StockVn',
@@ -113,15 +89,10 @@ export default {
     const selectedStock = ref(null);
     const stocks = ref([]);
     const companyName = ref(null);
-    const currentPrice = ref(null);
-    const fiPrice = ref(null); // Fundamental Index price
-    const dcfPrice = ref(null); // DCF price
-    const averagePrice = ref(null); // Average price
     const potentialStocks = ref({}); // Changed to object
     const loadingPotentialStocks = ref(false);
     const startScanning = ref(false);
     const selectedStocks = ref([]); // Store selected stocks and initialize as an empty array
-    const message = ref(''); // Store success/error message
     const isLoading = ref(false);
     const filterText = ref(''); // Add filterText
 
@@ -158,65 +129,11 @@ export default {
     watch(selectedStock, (newStock) => {
       if (newStock) {
         fetchCompanyInfo(newStock.code);
-        evaluatePrice(newStock.code);
       } else {
         // Clear previous stock data when no stock is selected
         companyName.value = null;
-        currentPrice.value = null;
-        fiPrice.value = null;
-        dcfPrice.value = null;
-        averagePrice.value = null;
       }
     });
-    const addToWatchList = async () => {
-      if (selectedStocks.value.length === 0) {
-        message.value = 'No stocks selected.';
-        return;
-      }
-
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-
-      // Disable the button and show an alert if not logged in
-      if (!userInfo || !userInfo.custodyCode) {
-        alert('You need to log in to use this feature.'); // More prominent message
-        return; // Stop execution
-      }
-
-      try {
-        // Construct the data to send, including entry_price for each stock
-        const stocksData = [];
-        if (potentialStocks.value && potentialStocks.value.data) {
-          for (const symbol of selectedStocks.value) {
-            const stockData = potentialStocks.value.data.find((stock) => stock.symbol === symbol);
-            if (stockData) {
-              stocksData.push({
-                symbol: stockData.symbol,
-                entry_price: stockData.highest_price,
-              });
-            }
-          }
-        }
-
-        const requestData = {
-          user_id: userInfo.custodyCode,
-          stocks: stocksData, // Send an array of objects with symbol and entry_price
-          operator: 'Add',
-        };
-
-        const response = await axios.post('/userTrade', requestData);
-
-        if (response.status === 200) {
-          message.value = 'Stocks added to watch list successfully!';
-          alert("Stocks added to watch list successfully!");
-          selectedStocks.value = []; // Clear the selected stocks array
-        } else {
-          message.value = `Failed to add stocks: ${response.status} - ${response.data}`;
-        }
-      } catch (error) {
-        message.value = `Error: ${error.message}`;
-        console.error('API error:', error); // Improved error handling
-      }
-    };
 
     const isLoggedIn = computed(() => {
       try {
@@ -258,7 +175,6 @@ export default {
         const response = await fetch(`https://services.entrade.com.vn/dnse-financial-product/securities/${stockCode}`);
         const data = await response.json();
         companyName.value = data.issuer || 'N/A';
-        currentPrice.value = data.basicPrice || null;
       } catch (error) {
         console.error('Error fetching company info:', error);
         companyName.value = 'Error fetching data';
@@ -266,45 +182,6 @@ export default {
         isLoading.value = false;
       }
     };
-
-    const evaluatePrice = async (ticket) => {
-      isLoading.value = true;
-      try {
-        const res = await fetch(`/tcanalysis/v1/evaluation/${ticket}/evaluation`);
-        if (res.status === 200) {
-          const json_body = await res.json();
-
-          // Fundamental Index method
-          const pe = json_body.industry?.pe;
-          const eps = json_body.eps;
-          const pb = json_body.industry?.pb;
-          const bvps = json_body.bvps;
-          const evebitda = json_body.industry?.evebitda;
-          const ebitda = json_body.ebitda;
-
-          fiPrice.value = (pe && eps && pb && bvps && evebitda && ebitda) ? Math.round(((pe * eps) + (pb * bvps) + (evebitda * ebitda)) / 3) : null;
-
-          // DCF method
-          const enterpriceValue = json_body.enterpriseValue;
-          const cash = json_body.cash;
-          const shortTermDebt = json_body.shortTermDebt;
-          const longTermDebt = json_body.longTermDebt;
-          const minorityInterest = json_body.minorityInterest;
-          const cap_value = enterpriceValue + cash + shortTermDebt + longTermDebt + minorityInterest;
-          const shareOutstanding = json_body.shareOutstanding;
-
-          dcfPrice.value = (cap_value && shareOutstanding) ? Math.round(cap_value / shareOutstanding) : null;
-
-          // Average both Fundamental Index and DCF method
-          averagePrice.value = (fiPrice.value != null && dcfPrice.value != null) ? Math.round((fiPrice.value + dcfPrice.value) / 2) : null;
-        }
-      }
-      catch (error) {
-        console.error('Error fetching evaluation data:', error);
-      } finally {
-        isLoading.value = false;
-      }
-    }
 
     const fetchPotentialStocks = async () => {
       loadingPotentialStocks.value = true;
@@ -337,23 +214,6 @@ export default {
       return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     }
 
-    const exportCSV = () => {
-      if (potentialStocks.value.length === 0) {
-        return;
-      }
-
-      const csvContent = "data:text/csv;charset=utf-8," + "potential stock symbol\n" + potentialStocks.value.join("\n");
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "potential_stocks.csv");
-      document.body.appendChild(link); // Required for Firefox
-
-      link.click(); // This will download the data file named "potential_stocks.csv".
-
-      document.body.removeChild(link);
-    };
-
     const fetchStocks = async () => {
       const response = await fetch('https://api-finfo.vndirect.com.vn/v4/stocks?q=type:STOCK~status:LISTED&fields=code&size=3000');
       const data = await response.json();
@@ -366,18 +226,12 @@ export default {
       onStockSelected,
       filterOptions,
       companyName,
-      currentPrice,
-      fiPrice,
-      dcfPrice,
-      averagePrice,
       formatNumber,
       potentialStocks,
       updateSelectedStock,
       updateStocks,
       loadingPotentialStocks,
-      exportCSV,
       startScanningStocks,
-      addToWatchList,
       formatDate,
       toggleStock,
       isLoggedIn,
