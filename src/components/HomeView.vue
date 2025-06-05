@@ -6,10 +6,10 @@
       <div class="row justify-content-center">
         <!-- <div class="col-md-8"> -->
         <div class="card">
-          <div class="card-header bg-secondary text-white">
+          <div class="card-header bg-secondary text-white" style="text-align: center;">
             <h5 class="mb-0">Vietnam Stock Evaluator</h5>
           </div>
-          <div class="card-body">
+          <div class="card-body" style="text-align: center;">
             <p class="card-text" style="margin-top:0px; font-weight: bold;">Choose a stock symbol:</p>
             <v-select v-model="selectedStock" :options="stocks" label="code" @input="onStockSelected"
               :filter-options="filterOptions"></v-select>
@@ -33,12 +33,12 @@
             <h5 class="mb-0">Potential symbols</h5>
             <div class="card-body">
               <div class="mb-2" v-if="potentialStocks.data && potentialStocks.data.length > 0">
-                <input type="text" v-model="filterText" placeholder="Filter symbols..." class="form-control" />
+                <input type="text" v-model="filterText" placeholder="Filter symbols..." class="form-control" style="width: 50%; margin: 0 auto;" />
               </div>
               <div v-if="potentialStocks.latest_updated" style="text-align: right; font-weight: bold;">
                 <strong>Last Updated:</strong> {{ formatDate(potentialStocks.latest_updated) }}
               </div>
-              <table class="table table-striped">
+              <table class="table table-striped" style="margin: 0 auto;">
                 <tbody>
                   <tr v-for="stock in filteredPotentialStocks" :key="stock.symbol"
                     @click="$nextTick(() => { selectedStock = { code: stock.symbol }; });" style="cursor: pointer;"
