@@ -79,7 +79,7 @@ export default {
   props: {
     searchText: String,
   },
-  emits: ['update:searchText', 'update:selectedStock'],
+  emits: ['update:searchText', 'update:selectedStock', 'update:stocks'],
   setup(props, { emit }) {
     const isMenuOpen = ref(false);
     const toggleMenu = () => {
