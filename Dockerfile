@@ -3,6 +3,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+
+ENV VUE_APP_API_URL="http://207.180.197.79:3000"
+
 RUN npm run build
 
 FROM nginx:stable AS production-stage
