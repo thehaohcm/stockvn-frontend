@@ -1,14 +1,20 @@
-FROM node:lts AS build-stage
+FROM node:lts-alpine
+
 WORKDIR /app
+
 COPY package*.json ./
+
+RUN apk --no-cache add curl
+
 RUN npm install
+RUN npm install -g http-server
+
 COPY . .
 
-ENV VUE_APP_API_URL="http://207.180.197.79:3000"
+ENV VUE_APP_API_URL="http://207.180.197.79:30000"
 
 RUN npm run build
 
-FROM nginx:stable AS production-stage
-COPY --from=build-stage /app/dist /usr/share/nginx/html
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+
+CMD ["http-server", "dist", "-p", "80"]

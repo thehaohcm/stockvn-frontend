@@ -18,5 +18,5 @@ spec:
           ports:
             - containerPort: 8080
           env:
-          - name: API_URL
-            value: "http://207.180.197.79:30000"
+          - name: VUE_APP_API_URL
+            value: ""
