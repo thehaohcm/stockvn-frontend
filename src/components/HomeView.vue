@@ -10,19 +10,7 @@
             <h5 class="mb-0">Vietnam Stock Evaluator</h5>
           </div>
           <div class="card-body" style="text-align: center;">
-            <p class="card-text" style="margin-top:0px; font-weight: bold;">Choose a stock symbol:</p>
-            <v-select v-model="selectedStock" :options="stocks" label="code" @input="onStockSelected"
-              :filter-options="filterOptions"></v-select>
-            <hr />
-            <table>
-              <tbody>
-                <tr>
-                  <td class="tr-stockvn">Company Name:</td>
-                  <td>{{ companyName ?? 'N/A' }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div v-if="selectedStock !== null && selectedStock.code !== ''" style="position: sticky; top: 0; background-color: #fff; z-index: 100;">
+            <div v-if="selectedStock !== null && selectedStock.code !== ''">
               <iframe :src="`https://stockchart.vietstock.vn/?stockcode=${selectedStock.code}`" width="100%"
                 height="500px"></iframe>
               <div v-if="isLoading" class="d-flex justify-content-center">
@@ -66,15 +54,13 @@
 <script>
 import NavBar from './NavBar.vue';
 import AppFooter from './AppFooter.vue';
-import { ref, onMounted, watch, computed } from 'vue';
-import vSelect from 'vue3-select';
+import { ref, onMounted, computed } from 'vue';
 
 export default {
   name: 'StockVn',
   components: {
     NavBar,
     AppFooter,
-    vSelect,
   },
   props: {
     searchText: String,
@@ -88,7 +74,6 @@ export default {
     const userInfo = ref(null);
     const selectedStock = ref(null);
     const stocks = ref([]);
-    const companyName = ref(null);
     const potentialStocks = ref({}); // Changed to object
     const loadingPotentialStocks = ref(false);
     const startScanning = ref(false);
@@ -109,31 +94,15 @@ export default {
       const response = await fetch('https://api-finfo.vndirect.com.vn/v4/stocks?q=type:STOCK~status:LISTED&fields=code&size=3000');
       const data = await response.json();
       stocks.value = data.data;
+      selectedStock.value={code:"VNINDEX"}
       emit('update:stocks', stocks.value);
       fetchStocks();
     });
-
-    const updateSelectedStock = (newStock) => {
-      selectedStock.value = newStock ? newStock : null;
-    }
-
-    const updateStocks = (newStocks) => {
-      stocks.value = newStocks;
-    }
 
     const startScanningStocks = () => {
       startScanning.value = true;
       fetchPotentialStocks();
     }
-
-    watch(selectedStock, (newStock) => {
-      if (newStock) {
-        fetchCompanyInfo(newStock.code);
-      } else {
-        // Clear previous stock data when no stock is selected
-        companyName.value = null;
-      }
-    });
 
     const isLoggedIn = computed(() => {
       try {
@@ -168,20 +137,6 @@ export default {
         option.code.toLowerCase().includes(search.toLowerCase())
       )
     }
-
-    const fetchCompanyInfo = async (stockCode) => {
-      isLoading.value = true;
-      try {
-        const response = await fetch(`https://services.entrade.com.vn/dnse-financial-product/securities/${stockCode}`);
-        const data = await response.json();
-        companyName.value = data.issuer || 'N/A';
-      } catch (error) {
-        console.error('Error fetching company info:', error);
-        companyName.value = 'Error fetching data';
-      } finally {
-        isLoading.value = false;
-      }
-    };
 
     const fetchPotentialStocks = async () => {
       loadingPotentialStocks.value = true;
@@ -225,11 +180,8 @@ export default {
       stocks,
       onStockSelected,
       filterOptions,
-      companyName,
       formatNumber,
       potentialStocks,
-      updateSelectedStock,
-      updateStocks,
       loadingPotentialStocks,
       startScanningStocks,
       formatDate,
