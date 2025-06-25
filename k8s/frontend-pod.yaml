@@ -6,10 +6,7 @@ metadata:
     app: ui
 spec:
   containers:
-  - name: api-pod
-    image: thehaohcm/stockvn-frontend-ui:0.0.1-amd64
-    ports:
-    - containerPort: 80
-    env:
-    - name: VUE_APP_API_URL
-      value: ""
+    - name: api-pod
+      image: thehaohcm/stockvn-frontend-ui:0.0.1-amd64
+      ports:
+        - containerPort: 80

@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: ui
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: ui
@@ -16,7 +16,13 @@ spec:
         - name: ui
           image: thehaohcm/stockvn-frontend-ui:0.0.6-amd64
           ports:
-            - containerPort: 8080
-          env:
-          - name: VUE_APP_API_URL
-            value: ""
+            - containerPort: 80
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config.json
+              subPath: config.json
+      volumes:
+        - name: config-volume
+          hostPath:
+            path: ./config.json
+            type: File
