@@ -142,7 +142,7 @@ export default {
       loadingPotentialStocks.value = true;
       isLoading.value = true;
       try {
-        const response = await fetch(`${process.env.VUE_APP_API_URL}/getPotentialSymbols`);
+        const response = await fetch(`${this.$apiUrl}/getPotentialSymbols`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
