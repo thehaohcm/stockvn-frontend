@@ -11,8 +11,6 @@ RUN npm install -g http-server
 
 COPY . .
 
-ENV VUE_APP_API_URL="http://207.180.197.79:30000"
-
 RUN npm run build
 
 EXPOSE 80

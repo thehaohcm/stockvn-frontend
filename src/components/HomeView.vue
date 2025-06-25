@@ -47,8 +47,8 @@
         </div>
       </div>
     </div>
+    <AppFooter />
     </div>
-  <AppFooter />
 </template>
 
 <script>
@@ -142,7 +142,9 @@ export default {
       loadingPotentialStocks.value = true;
       isLoading.value = true;
       try {
-        const response = await fetch(`${this.$apiUrl}/getPotentialSymbols`);
+        const apiUrl = window.__APP_CONFIG__.apiUrl || 'http://localhost:3000';
+        // const apiUrl ='http://localhost:3000';
+        const response = await fetch(`${apiUrl}/getPotentialSymbols`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
