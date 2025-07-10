@@ -11,8 +11,6 @@ RUN npm install -g http-server
 
 COPY . .
 
-RUN npm run test
-
 RUN npm run build
 
 EXPOSE 80

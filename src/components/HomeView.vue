@@ -41,7 +41,7 @@
 
               <button v-if="!loadingPotentialStocks && !startScanning" @click="startScanningStocks"
                 class="btn btn-success">Start to
-                scan...Hao</button>
+                scan...</button>
             </div>
           </div>
         </div>
