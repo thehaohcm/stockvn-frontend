@@ -13,7 +13,7 @@ pipeline {
         slackSend color: "#439FE0", message: "Build Started"
 
         // build image
-        sh 'docker build -f project/Dockerfile -t thehaohcm/stockvn-frontend-ui:latest ./project/'
+        sh 'docker build -f project/Dockerfile -t thehaohcm/stockvn-frontend-ui:latest .'
 
         // push image
         sh 'docker image push thehaohcm/stockvn-frontend-ui:latest'
@@ -31,7 +31,7 @@ pipeline {
           '''
 
         // start a container
-        sh 'docker run -d --rm --name stockvn-frontend-ui -p 8081:8080 thehaohcm/stockvn-frontend-ui:latest'
+        sh 'docker run -d --rm --name stockvn-frontend-ui -p 8081:80 thehaohcm/stockvn-frontend-ui:latest'
       }
     }
   }
