@@ -31,7 +31,7 @@ pipeline {
           '''
 
         // start a container
-        sh 'docker run -d --rm --name stockvn-frontend-ui -p 8081:80 thehaohcm/stockvn-frontend-ui:latest'
+        sh 'docker run -d --rm --name stockvn-frontend-ui -p 8082:80 thehaohcm/stockvn-frontend-ui:latest'
       }
     }
   }
